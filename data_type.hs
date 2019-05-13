@@ -70,6 +70,58 @@ predecessorAUX elem (Node a (Node b bleft bright) (Node c cleft cright))
 -- 	| elem < a && elem > b = Node a (Node b bleft bright) (Node c cleft cright)
 -- 	| elem < a && elem < b = successorAUX elem (Node b bleft bright)
 
+deleteBST elem bst
+	| isLeaf searchedNode = deleteLEAF elem bst
+	| hasOneChild searchedNode = deleteOneChild elem bst
+	| hasTwoChildren searchedNode = deleteSUCCESSOR elem bst
+		where
+			searchedNode = search elem bst
+
+deleteLEAF elem (Node a (Node b bleft bright) (Node c cleft cright))
+	| elem == a = NIL
+	| elem == b = Node a NIL (Node c cleft cright)
+	| elem == c = Node c (Node b bleft bright) NIL
+	| elem > a = deleteLEAF (Node c cleft cright)
+	| elem < a = deleteLEAF (Node b bleft bright)
+
+deleteOneChild elem (Node a (Node b bleft bright) (Node c cleft cright))
+	| elem == a  = (getNotNullChild (Node a (Node b bleft bright) (Node c cleft cright)))
+	| elem == b = Node a (getNotNullChild (Node b bleft bright)) (Node c cleft cright)
+	| elem == c = Node a (Node b bleft bright) (getNotNullChild (Node c cleft cright))
+	| elem < a = deleteOneChild elem (Node b bleft bright)
+	| elem > a = deleteOneChild elem (Node c cleft cright)
+
+deleteSUCCESSOR elem (Node a left right)
+	| elem == a = mergeChildrenToParent (toList left) (toList right) (Node s sleft sright)
+	| elem < a = deleteSUCCESSOR elem left
+	| elem > a = deleteSUCCESSOR elem right
+		where
+			Node s sleft sright = successorBST elem (Node a left right)
+
+mergeChildrenToParent [] [] bst = bst
+mergeChildrenToParent [] (y:ys) bst =
+	mergeChildrenToParent [] ys (insert y bst)
+mergeChildrenToParent (x:xs) (y:ys) bst =
+	mergeChildrenToParent xs (y:ys) (insert x bst)
+
+getNotNullChild (Node a left right)
+	| left /= NIL = left
+	| right /= NIL = right
+	| otherwise = NIL 
+
+hasOneChild (Node a left right)
+	| left == NIL && right /= NIL = True
+	| right == NIL && left /= NIL = True
+	| otherwise = False
+
+hasTwoChildren (Node a left right)
+	| left /= NIL && right /= NIL = True
+	| otherwise = False
+
+isLeaf (Node a left right)
+	| left == NIL && right == NIL = True
+	| otherwise = False
+
 preOrder NIL = []
 preOrder (Node a left right) = [a] ++ preOrder left ++ preOrder right
 
