@@ -70,39 +70,34 @@ predecessorAUX elem (Node a (Node b bleft bright) (Node c cleft cright))
 -- 	| elem < a && elem > b = Node a (Node b bleft bright) (Node c cleft cright)
 -- 	| elem < a && elem < b = successorAUX elem (Node b bleft bright)
 
-deleteBST elem bst
-	| isLeaf searchedNode = deleteLEAF elem bst
-	| hasOneChild searchedNode = deleteOneChild elem bst
-	| hasTwoChildren searchedNode = deleteSUCCESSOR elem bst
-		where
-			searchedNode = search elem bst
+successorBST elem bst 
+	| right /= NIL = successorAUX right
+	| otherwise = NIL
+	where
+		Node a left right = search elem bst
 
-deleteLEAF elem (Node a (Node b bleft bright) (Node c cleft cright))
+successorAUX (Node a left right)
+	| left /= NIL = successorAUX left
+	| otherwise = (Node a left right)
+
+deleteBST elem NIL = NIL
+deleteBST elem (Node a NIL NIL)
 	| elem == a = NIL
-	| elem == b = Node a NIL (Node c cleft cright)
-	| elem == c = Node c (Node b bleft bright) NIL
-	| elem > a = deleteLEAF (Node c cleft cright)
-	| elem < a = deleteLEAF (Node b bleft bright)
-
-deleteOneChild elem (Node a (Node b bleft bright) (Node c cleft cright))
-	| elem == a  = (getNotNullChild (Node a (Node b bleft bright) (Node c cleft cright)))
-	| elem == b = Node a (getNotNullChild (Node b bleft bright)) (Node c cleft cright)
-	| elem == c = Node a (Node b bleft bright) (getNotNullChild (Node c cleft cright))
-	| elem < a = deleteOneChild elem (Node b bleft bright)
-	| elem > a = deleteOneChild elem (Node c cleft cright)
-
-deleteSUCCESSOR elem (Node a left right)
-	| elem == a = mergeChildrenToParent (toList left) (toList right) (Node s sleft sright)
-	| elem < a = deleteSUCCESSOR elem left
-	| elem > a = deleteSUCCESSOR elem right
-		where
-			Node s sleft sright = successorBST elem (Node a left right)
-
-mergeChildrenToParent [] [] bst = bst
-mergeChildrenToParent [] (y:ys) bst =
-	mergeChildrenToParent [] ys (insert y bst)
-mergeChildrenToParent (x:xs) (y:ys) bst =
-	mergeChildrenToParent xs (y:ys) (insert x bst)
+	| otherwise = (Node a NIL NIL)
+deleteBST elem (Node a NIL right)
+	| elem == a = right
+	| elem > a = (Node a NIL (deleteBST elem right))
+	| otherwise = (Node a NIL right)
+deleteBST elem (Node a left NIL)
+	| elem == a = left
+	| elem < a = Node a (deleteBST elem left) NIL
+	| otherwise = Node a left NIL
+deleteBST elem (Node a left right)
+	| elem == a = Node min left (deleteBST min right) 
+	| elem < a = (Node a (deleteBST elem left) right)
+	| elem > a = (Node a left (deleteBST elem right))
+	where
+		Node min mleft mright = minimumBST right 
 
 getNotNullChild (Node a left right)
 	| left /= NIL = left
